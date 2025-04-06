@@ -1,4 +1,3 @@
-
 # Stage 1: Build the application
 FROM eclipse-temurin:21-jdk AS builder
 
@@ -21,7 +20,7 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy the JAR file from the builder stage
-COPY --from=builder bibliotecas/app/target/*.jar app_bibliotecas.jar
+COPY --from=builder /app/target/*.jar app_bibliotecas.jar
 
 # Expose the port the app will run on
 EXPOSE 9090
