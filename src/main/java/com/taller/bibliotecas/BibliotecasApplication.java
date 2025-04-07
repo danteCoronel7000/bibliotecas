@@ -91,7 +91,8 @@ public class BibliotecasApplication {
 									"http://localhost:4200",      // Para desarrollo en Angular
 									"http://localhost:8100",      // Para desarrollo en Ionic
 									"capacitor://localhost",      // Para aplicaciones con Capacitor
-									"http://localhost"
+									"http://localhost", //generico
+									"https://tallerunobibliotecas.netlify.app/"
 							)
 							.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // Solo una línea para métodos permitidos
 							.allowedHeaders("*")
