@@ -76,7 +76,11 @@ public class usersServiceImpl implements UsersService{
         if (usuarioExistente.isPresent()) {
             // Si el usuario existe, copia los cambios y guárdalo
             Usuarios usuarioParaActualizar = usuarioExistente.get();
-            usuarioParaActualizar.setPassword(usuario.getPassword());
+
+            // Encriptar la contraseña antes de guardarla
+            String passwordEncriptada = passwordEncoder.encode(usuario.getPassword());
+            usuarioParaActualizar.setPassword(passwordEncriptada);
+
             // Agrega todos los demás campos que deseas actualizar
             return usuariosRepository.save(usuarioParaActualizar);
         } else {

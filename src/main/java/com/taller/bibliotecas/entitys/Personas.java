@@ -1,6 +1,7 @@
 package com.taller.bibliotecas.entitys;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,7 +42,7 @@ public class Personas {
             name = "id_dato",
             referencedColumnName = "id_dato"
     )
-    @JsonBackReference
+    @JsonManagedReference // Cambiá esto
     Datos datos;
 
     @OneToMany(

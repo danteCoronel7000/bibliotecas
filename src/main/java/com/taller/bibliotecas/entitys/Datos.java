@@ -1,5 +1,6 @@
 package com.taller.bibliotecas.entitys;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,6 +32,6 @@ public class Datos {
             mappedBy = "datos",
             fetch = FetchType.EAGER
     )
-    @JsonManagedReference
+    @JsonBackReference // Cambiá esto
     Personas persona;
 }
