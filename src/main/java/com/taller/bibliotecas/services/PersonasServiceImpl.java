@@ -21,16 +21,13 @@ public class PersonasServiceImpl implements PersonasService{
 
     // de aqui se borro en autowired
     private final PersonasRepository personasRepository;
-    public PersonasServiceImpl(PersonasRepository personasRepository) {
-        this.personasRepository = personasRepository;
-    }
-    //private final ImageService imageService;
-/*
+
     public PersonasServiceImpl(PersonasRepository personasRepository, ImageService imageService) {
         this.personasRepository = personasRepository;
         this.imageService = imageService;
     }
-*/
+    private final ImageService imageService;
+
 
     @Override
     public List<Personas> findAll() {
@@ -83,8 +80,8 @@ public class PersonasServiceImpl implements PersonasService{
     }
 
 
-    //metodos crud para las fotos de perfil de los usuarios;
-    /*
+    //metodos crud para las fotos de perfil de los usuarios con cloudinary
+
     @Override
     public Personas savePersona(Personas personas, MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()){
@@ -126,6 +123,6 @@ public class PersonasServiceImpl implements PersonasService{
         personas.setImage(newImage);
         return personasRepository.save(personas);
     }
-    */
+
 
 }

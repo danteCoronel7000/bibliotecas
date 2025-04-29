@@ -1,4 +1,4 @@
-/*
+
 package com.taller.bibliotecas.services;
 
 import com.cloudinary.Cloudinary;
@@ -29,6 +29,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         valuesMap.put("api_secret", apiSecret);
         cloudinary = new Cloudinary(valuesMap);
     }
+
     @Override
     public Map upload(MultipartFile multipartFile) throws IOException {
         File file = convert(multipartFile);
@@ -51,4 +52,3 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         return file;
     }
 }
-*/

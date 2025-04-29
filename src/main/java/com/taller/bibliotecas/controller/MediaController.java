@@ -3,6 +3,7 @@ package com.taller.bibliotecas.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taller.bibliotecas.entitys.*;
 import com.taller.bibliotecas.repository.*;
+import com.taller.bibliotecas.services.ImageService;
 import com.taller.bibliotecas.services.PersonasService;
 import com.taller.bibliotecas.services.StorageService;
 
@@ -32,6 +33,8 @@ import java.util.Optional;
 public class MediaController {
     private final StorageService storageService;
     private final HttpServletRequest request;
+    @Autowired
+    ImageService imageService;
     @Autowired
     TelefonosRepository telefonosRepository;
     @Autowired
@@ -209,50 +212,49 @@ public class MediaController {
 
     @PostMapping("/crear")
     public ResponseEntity<Personas> crearPersona(
-            @RequestParam("persona") String personaJson,
-            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+            @RequestPart("persona") String personaJson,
+            @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
 
-        // Imprimir el JSON de la persona en la consola
+        // Imprimir el JSON recibido
         System.out.println("JSON recibido: " + personaJson);
-        // Convertir el JSON de persona a la entidad Personas
-        Personas persona = new ObjectMapper().readValue(personaJson, Personas.class);
 
-        // Guardar Datos
+        // Convertir JSON a objeto Personas
+        Personas persona = new ObjectMapper().readValue(personaJson, Personas.class);
+//guardamos primero la persona
+        Personas savedPersona = personasService.save(persona);
+        // Manejo de Datos (relación bidireccional)
         Datos datos = persona.getDatos();
         if (datos != null) {
+            datos.setPersona(persona); // establecer la relación bidireccional
             Datos savedDatos = datosRepository.save(datos);
-            persona.setDatos(savedDatos);  // Asociar Datos a la Persona
+            persona.setDatos(savedDatos); // volver a asociar datos a persona
         }
 
-        // Guardar Telefonos
+        // Guardar primero la persona sin teléfonos ni imagen para obtener ID
         List<Telefonos> telefonos = persona.getTelefonos();
+        persona.setTelefonos(null);
+        persona.setImage(null);
+
+
+        // Asociar teléfonos con persona ya guardada
         if (telefonos != null) {
             for (Telefonos telefono : telefonos) {
-                telefono.setId_persona(persona.getId_persona());
+                telefono.setId_persona(savedPersona.getId_persona());
             }
             List<Telefonos> savedTelefonos = telefonosRepository.saveAll(telefonos);
-            persona.setTelefonos(savedTelefonos);  // Asociar los teléfonos a la Persona
+            savedPersona.setTelefonos(savedTelefonos);
         }
 
-        // Verificar si hay un archivo de imagen
+        // Procesar imagen (si existe)
         if (file != null && !file.isEmpty()) {
-            // Subir la imagen y obtener la URL
-            String path = storageService.store(file);
-            String host = request.getRequestURL().toString().replace(request.getRequestURI(), "");
-            String url = ServletUriComponentsBuilder
-                    .fromHttpUrl(host)
-                    .path("/api/media/")
-                    .path(path)
-                    .toUriString();
-
-            // Establecer la URL de la imagen en el campo 'foto'
-            persona.setFoto(url);
+            Image image = imageService.uploadImage(file);
+            savedPersona.setImage(image);
         }
 
-        // Guardar la persona en la base de datos
-        Personas savedPersona = personasService.save(persona);
+        // Guardar persona nuevamente con los datos completos
+        savedPersona = personasService.save(savedPersona);
 
-        // Devolver la respuesta con la persona creada
+        // Devolver la respuesta
         return ResponseEntity.ok(savedPersona);
     }
 
@@ -260,9 +262,11 @@ public class MediaController {
 //metodo para actualizar la persona
     @PostMapping("/actualizar")
     public ResponseEntity<Personas> actualizarPersona(
-            @RequestParam("persona") String personaJson,
-            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+            @RequestPart("persona") String personaJson,
+            @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
 
+        // Imprimir el JSON recibido
+        System.out.println("JSON recibido: " + personaJson);
         // Convertir el JSON de persona a la entidad Personas
         Personas persona = new ObjectMapper().readValue(personaJson, Personas.class);
 
@@ -303,16 +307,13 @@ public class MediaController {
         }
 
         // Manejar la imagen si se sube un nuevo archivo
-        if (file != null && !file.isEmpty()) {
-            String path = storageService.store(file);
-            String host = request.getRequestURL().toString().replace(request.getRequestURI(), "");
-            String url = ServletUriComponentsBuilder
-                    .fromHttpUrl(host)
-                    .path("/api/media/")
-                    .path(path)
-                    .toUriString();
-            existingPersona.setFoto(url);
-        }
+
+            if (persona.getImage() != null) {
+                imageService.deleteImage(persona.getImage());
+            }
+            Image newImage = imageService.uploadImage(file);
+            existingPersona.setImage(newImage);
+
 
         // Guardar la persona actualizada
         Personas updatedPersona = personasService.save(existingPersona);
@@ -327,23 +328,7 @@ public class MediaController {
     @PutMapping("/updatefoto")
     public ResponseEntity<Map<String, String>> updateFile(
             @RequestParam("file") MultipartFile multipartFile,
-            @RequestParam("id_persona") Long idPersona) {
-
-        // Guardar el archivo y obtener el path
-        String path;
-        try {
-            path = storageService.store(multipartFile);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al guardar el archivo", e);
-        }
-
-        // Construir la URL completa del archivo
-        String host = request.getRequestURL().toString().replace(request.getRequestURI(), "");
-        String url = ServletUriComponentsBuilder
-                .fromHttpUrl(host)
-                .path("/api/media/")
-                .path(path)
-                .toUriString();
+            @RequestParam("id_persona") Long idPersona) throws IOException {
 
         // Buscar la persona en la base de datos por ID
         Optional<Personas> optionalPersona = personasService.findById_persona(idPersona);
@@ -353,11 +338,16 @@ public class MediaController {
 
         // Actualizar el campo 'foto' de la persona y guardar los cambios
         Personas persona = optionalPersona.get();
-        persona.setFoto(url);
-        personasService.save(persona);
+        if (persona.getImage() != null) {
+            imageService.deleteImage(persona.getImage());
+        }
+        Image newImage = imageService.uploadImage(multipartFile);
+        persona.setImage(newImage);
 
+
+        personasService.save(persona);
         // Responder con la URL de la nueva foto
-        return ResponseEntity.ok(Map.of("url", url));
+        return ResponseEntity.ok(Map.of("url", persona.getImage().getImageUrl()));
     }
 
     @PostMapping("upload")
@@ -376,7 +366,7 @@ public class MediaController {
         if (optionalPersona.isPresent()) {
             // Actualizar el campo 'foto' con la URL
             Personas persona = optionalPersona.get();
-            persona.setFoto(url);
+            //persona.setFoto(url);
 
             // Guardar los cambios en la base de Datos
             personasService.save(persona);

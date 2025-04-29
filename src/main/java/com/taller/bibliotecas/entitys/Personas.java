@@ -33,7 +33,11 @@ public class Personas {
     @Column(name = "estado", columnDefinition = "BIGINT DEFAULT 1")
     Long estado;
     String tipo_per;
-    String foto;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image_id", referencedColumnName = "id")
+    private Image image;
+
     @OneToOne(
             cascade = CascadeType.PERSIST,
             fetch = FetchType.EAGER

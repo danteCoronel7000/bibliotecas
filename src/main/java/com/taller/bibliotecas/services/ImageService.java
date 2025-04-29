@@ -1,4 +1,4 @@
-/*
+
 package com.taller.bibliotecas.services;
 
 import com.taller.bibliotecas.entitys.Image;
@@ -10,5 +10,3 @@ public interface ImageService {
     Image uploadImage(MultipartFile file) throws IOException;
     void deleteImage(Image image) throws IOException;
 }
-
- */

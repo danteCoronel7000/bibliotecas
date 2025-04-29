@@ -26,12 +26,17 @@ public interface PersonasService {
     Personas habilitarPersona(Long id_persona);
 
     //metodos para la foto del usuario
-    /*
+
     Personas savePersona(Personas personas, MultipartFile file) throws IOException;
+
     Personas updatePersona(Personas personas);
+
     List<Personas> getPersona();
+
     Optional<Personas> getPersonaById(Long id);
+
     void deletePersona(Personas personas) throws IOException;
+
     Personas updatePersonaImage(MultipartFile file, Personas personas) throws IOException;
-     */
+
 }

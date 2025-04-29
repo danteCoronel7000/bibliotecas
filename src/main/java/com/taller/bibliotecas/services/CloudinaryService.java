@@ -1,4 +1,4 @@
-/*package com.taller.bibliotecas.services;
+package com.taller.bibliotecas.services;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,4 +9,3 @@ public interface CloudinaryService {
     Map upload(MultipartFile multipartFile) throws IOException;
     Map delete(String id) throws IOException;
 }
- */

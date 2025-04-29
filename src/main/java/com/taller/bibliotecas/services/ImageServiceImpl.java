@@ -1,4 +1,4 @@
-/*
+
 package com.taller.bibliotecas.services;
 import com.taller.bibliotecas.entitys.Image;
 import com.taller.bibliotecas.repository.ImageRepository;
@@ -36,5 +36,3 @@ public class ImageServiceImpl implements ImageService {
 
 
 }
-
- */
